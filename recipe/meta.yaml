@@ -1,12 +1,12 @@
-{% set version = "0.24" %}
-{% set hash_value = "f22cbf399a5fcded061c566691be58d421b6c2b668ee0602665749a0266715f7" %}
+{% set version = "0.29" %}
+{% set hash_value = "218906fa3166becfb3a9acc1131d0de2452796e63aa68c311317433183bdae0a" %}
 
 package:
   name: python-packit
   version: '{{ version }}'
 
 source:
-  url: https://files.pythonhosted.org/packages/58/4f/0ac86eb3cc9ce74f87de314faf33426798052b5b17a8e18bb4f0a08686b4/packit-{{ version }}.tar.gz
+  url: https://files.pythonhosted.org/packages/source/p/packit/packit-{{ version }}.tar.gz
   sha256: '{{ hash_value }}'
   patches:
     - version.patch
