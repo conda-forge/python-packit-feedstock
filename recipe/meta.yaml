@@ -8,8 +8,6 @@ package:
 source:
   url: https://files.pythonhosted.org/packages/source/p/packit/packit-{{ version }}.tar.gz
   sha256: '{{ hash_value }}'
-  patches:
-    - version.patch
 
 build:
   noarch: python
@@ -21,14 +19,14 @@ requirements:
     - python
     - pip
     - wheel >=0.24
-    - pbr >=4.0
+    - pbr >=4.0,<5.6.0
     - glob2 >=0.4.1
     - packaging >=16.8
 
   run:
     - python
     - wheel >=0.24
-    - pbr >=4.0
+    - pbr >=4.0,<5.6.0
     - glob2 >=0.4.1
     - packaging >=16.8
 
