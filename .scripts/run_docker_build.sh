@@ -5,6 +5,10 @@
 # changes to this script, consider a proposal to conda-smithy so that other feedstocks can also
 # benefit from the improvement.
 
+source .scripts/logging_utils.sh
+
+( startgroup "Configure Docker" ) 2> /dev/null
+
 set -xeo pipefail
 
 THISDIR="$( cd "$( dirname "$0" )" >/dev/null && pwd )"
@@ -12,6 +16,10 @@ PROVIDER_DIR="$(basename $THISDIR)"
 
 FEEDSTOCK_ROOT=$(cd "$(dirname "$0")/.."; pwd;)
 RECIPE_ROOT="${FEEDSTOCK_ROOT}/recipe"
+
+if [ -z ${FEEDSTOCK_NAME} ]; then
+    export FEEDSTOCK_NAME=$(basename ${FEEDSTOCK_ROOT})
+fi
 
 docker info
 
@@ -41,8 +49,12 @@ fi
 if [ -z "${DOCKER_IMAGE}" ]; then
     SHYAML_INSTALLED="$(shyaml -h || echo NO)"
     if [ "${SHYAML_INSTALLED}" == "NO" ]; then
-        echo "WARNING: DOCKER_IMAGE variable not set and shyaml not installed. Falling back to quay.io/condaforge/linux-anvil-comp7"
-        DOCKER_IMAGE="quay.io/condaforge/linux-anvil-comp7"
+        echo "WARNING: DOCKER_IMAGE variable not set and shyaml not installed. Trying to parse with coreutils"
+        DOCKER_IMAGE=$(cat .ci_support/${CONFIG}.yaml | grep '^docker_image:$' -A 1 | tail -n 1 | cut -b 3-)
+        if [ "${DOCKER_IMAGE}" = "" ]; then
+            echo "No docker_image entry found in ${CONFIG}. Falling back to quay.io/condaforge/linux-anvil-comp7"
+            DOCKER_IMAGE="quay.io/condaforge/linux-anvil-comp7"
+        fi
     else
         DOCKER_IMAGE="$(cat "${FEEDSTOCK_ROOT}/.ci_support/${CONFIG}.yaml" | shyaml get-value docker_image.0 quay.io/condaforge/linux-anvil-comp7 )"
     fi
@@ -52,9 +64,20 @@ mkdir -p "$ARTIFACTS"
 DONE_CANARY="$ARTIFACTS/conda-forge-build-done-${CONFIG}"
 rm -f "$DONE_CANARY"
 
+# Allow people to specify extra default arguments to `docker run` (e.g. `--rm`)
+DOCKER_RUN_ARGS="${CONDA_FORGE_DOCKER_RUN_ARGS}"
 if [ -z "${CI}" ]; then
-    DOCKER_RUN_ARGS="-it "
+    DOCKER_RUN_ARGS="-it ${DOCKER_RUN_ARGS}"
 fi
+
+echo "FEEDSTOCK_NAME: $FEEDSTOCK_NAME"
+echo "BINSTAR_TOKEN: $BINSTAR_TOKEN"
+echo "FEEDSTOCK_TOKEN: $FEEDSTOCK_TOKEN"
+echo "PROVIDER_DIR: $PROVIDER_DIR"
+
+( endgroup "Configure Docker" ) 2> /dev/null
+
+( startgroup "Start Docker" ) 2> /dev/null
 
 export UPLOAD_PACKAGES="${UPLOAD_PACKAGES:-True}"
 docker run ${DOCKER_RUN_ARGS} \
@@ -82,3 +105,4 @@ test -f "$DONE_CANARY"
 
 # This closes the last group opened in `build_steps.sh`
 ( endgroup "Final checks" ) 2> /dev/null
+
