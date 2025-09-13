@@ -1,5 +1,4 @@
-{% set version = "0.29" %}
-{% set hash_value = "218906fa3166becfb3a9acc1131d0de2452796e63aa68c311317433183bdae0a" %}
+{% set version = "0.30.0" %}
 
 package:
   name: python-packit
@@ -7,7 +6,7 @@ package:
 
 source:
   url: https://files.pythonhosted.org/packages/source/p/packit/packit-{{ version }}.tar.gz
-  sha256: '{{ hash_value }}'
+  sha256: '0dc7efbde8d460985e2d8f538ac6171471ed4ad4ed98959f78e3758d348724ce'
 
 build:
   noarch: python
